@@ -1,4 +1,3 @@
-from logging import disable
 import bcrypt
 from fastapi import APIRouter, status, Depends
 from fastapi.exceptions import HTTPException
@@ -33,16 +32,8 @@ async def get_current_user(token: str = Depends(oauth2)):
     return user
 
 
-async def get_current_active_user(user: UserModel = Depends(get_current_user)):
-    if user.disabled:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
-        )
-    return user
-
-
 @user_routes.get("/user/me")
-async def user_me(user: UserModel = Depends(get_current_active_user)):
+async def user_me(user: UserModel = Depends(get_current_user)):
     return user
 
 
@@ -66,7 +57,6 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
 @user_routes.post("/signup")
 async def signup(form: UserModel):
     hash = pass_hash(form.pass_hash)
-    print(form.email)
     user = User(
         first_name=form.first_name,
         last_name=form.last_name,

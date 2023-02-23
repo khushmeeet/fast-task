@@ -1,0 +1,4 @@
+fastapi==0.92.0
+mongoengine==0.26.0
+bcrypt==4.0.1
+dotenv
