@@ -1,6 +1,6 @@
 import bcrypt
 import datetime
-from datetime import timedelta
+import time
 from fastapi import APIRouter, status, Depends
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -32,13 +32,12 @@ def decode_token(token: str):
     return user
 
 
-def create_jwt(data: dict, expires_delta: timedelta | None = None):
+def create_jwt(data: dict, expires_delta: int | None = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.datetime.now() + expires_delta
+        expire = time.time() + expires_delta
     else:
-        expire = datetime.datetime.now() + timedelta(minutes=15)
-    print(expire)
+        expire = time.time() + (15 * 60)
     to_encode["exp"] = expire
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -47,12 +46,11 @@ def create_jwt(data: dict, expires_delta: timedelta | None = None):
 async def get_current_user(token: str = Depends(oauth2)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("email")
-        print(email)
-        if email is None:
+        print(payload)
+        if datetime.datetime.fromtimestamp(payload["exp"]) < datetime.datetime.now():
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication creentials",
+                detail="JWT expired",
                 headers={"WWW-Authenticate": "Bearer"},
             )
     except JWTError as e:
@@ -62,14 +60,14 @@ async def get_current_user(token: str = Depends(oauth2)):
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = User.objects(email=email)
+    user = User.objects(email=payload.get("email"))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication creentials",
+            detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return user
+    return user[0].to_mongo().to_dict()
 
 
 @user_routes.get("/user/me", response_model=UserModel)
@@ -95,8 +93,10 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
         )
-    jwt_expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    jwt = create_jwt(data={"email": user_model.email}, expires_delta=jwt_expiration)
+    # jwt_expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    jwt = create_jwt(
+        data={"email": user_model.email}, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
     return {"access_token": jwt, "token_type": "bearer"}
 
 
@@ -119,3 +119,8 @@ async def signup(form: UserModel):
     )
     user.save()
     return {"detail": "user registered successfully"}
+
+
+@user_routes.post("/logout")
+async def logout(auth: str):
+    return {"detail": "token revoked"}
