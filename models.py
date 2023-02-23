@@ -23,3 +23,8 @@ class UserModel(BaseModel):
     # TODO: Support for password hash
     pass_hash: str
     # disabled: bool
+
+
+class JWTModel(BaseModel):
+    access_token: str
+    token_type: str
