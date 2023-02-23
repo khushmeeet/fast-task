@@ -2,11 +2,11 @@ import datetime
 from typing import List
 from typing_extensions import Literal
 from pydantic import BaseModel
-from pydantic.networks import NameEmail
+from pydantic.networks import EmailStr
 from pydantic.types import FutureDate
 
 
-class Todos(BaseModel):
+class TodosModel(BaseModel):
     title: str
     desc: str
     tags: List[str]
@@ -16,9 +16,10 @@ class Todos(BaseModel):
     status: Literal["done", "ndone", "archived"]
 
 
-class User(BaseModel):
+class UserModel(BaseModel):
     first_name: str
     last_name: str
-    email: NameEmail
+    email: EmailStr
     # TODO: Support for password hash
     pass_hash: str
+    # disabled: bool
