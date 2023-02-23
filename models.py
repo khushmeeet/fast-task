@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 from typing_extensions import Literal
 from pydantic import BaseModel
 from pydantic.networks import EmailStr
@@ -18,7 +18,7 @@ class TodosModel(BaseModel):
 
 class UserModel(BaseModel):
     first_name: str
-    last_name: str
+    last_name: Optional[str]
     email: EmailStr
     # TODO: Support for password hash
     pass_hash: str
