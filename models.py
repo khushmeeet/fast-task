@@ -7,13 +7,18 @@ from pydantic.types import FutureDate
 
 
 class TodosModel(BaseModel):
+    id: int
     title: str
-    desc: str
-    tags: List[str]
-    flag: bool
-    date: FutureDate
-    time: datetime.time
+    desc: Optional[str]
+    tags: Optional[List[str]]
+    flag: Optional[bool]
+    date: Optional[FutureDate]
+    time: Optional[datetime.time]
     status: Literal["done", "ndone", "archived"]
+
+
+class TodosModelList(BaseModel):
+    todos: list[TodosModel]
 
 
 class UserModel(BaseModel):

@@ -1,6 +1,8 @@
+import os
 import bcrypt
 import datetime
 import time
+from dotenv import load_dotenv
 from fastapi import APIRouter, status, Depends
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -9,7 +11,9 @@ from jose import JWTError, jwt
 from db import User
 from models import UserModel, JWTModel
 
-SECRET_KEY = "05ada7788cc8cf3213aac2969ec0fb7c222cc15ee2ed19890b8f483895603cb4"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -37,7 +41,7 @@ def create_jwt(data: dict, expires_delta: int | None = None):
     if expires_delta:
         expire = time.time() + expires_delta
     else:
-        expire = time.time() + (15 * 60)
+        expire = time.time() + (ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     to_encode["exp"] = expire
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -54,7 +58,6 @@ async def get_current_user(token: str = Depends(oauth2)):
                 headers={"WWW-Authenticate": "Bearer"},
             )
     except JWTError as e:
-        print(e)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid authentication credentials",
@@ -93,7 +96,6 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
         )
-    # jwt_expiration = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     jwt = create_jwt(
         data={"email": user_model.email}, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
