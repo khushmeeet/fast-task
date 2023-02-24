@@ -1,5 +1,4 @@
 import os
-import bcrypt
 import datetime
 import time
 from dotenv import load_dotenv
@@ -13,7 +12,7 @@ from models import UserModel, JWTModel
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "default")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -106,7 +105,7 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
 async def signup(form: UserModel):
     user = User.objects(email=form.email)
     print(user)
-    if user == []:
+    if user != []:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User already exists",
@@ -117,7 +116,6 @@ async def signup(form: UserModel):
         last_name=form.last_name,
         email=form.email,
         pass_hash=hash,
-        disabled=False,
     )
     user.save()
     return {"detail": "user registered successfully"}
