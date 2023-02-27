@@ -5,11 +5,6 @@ from pydantic import BaseModel
 from pydantic.fields import Field
 from pydantic.networks import EmailStr
 from pydantic.types import FutureDate
-<<<<<<< HEAD:models.py
-import bson.errors
-from bson.objectid import ObjectId
-=======
->>>>>>> caa985d (refactoring for microservices arch):todo_service/app/models.py
 from db import StatusEnum
 
 
