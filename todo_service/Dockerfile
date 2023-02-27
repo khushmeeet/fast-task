@@ -4,4 +4,4 @@ COPY app/ ~/app
 WORKDIR ~/app
 RUN pip install -r requirements.txt
 EXPOSE 8000
-ENTRYPOINT ["python","-m", "uvicorn", "--host", "0.0.0.0", "main:app"]
+ENTRYPOINT ["uvicorn", "--host", "0.0.0.0", "main:app"]
