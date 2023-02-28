@@ -55,5 +55,5 @@ jobs:
                   context: todo_service
                   file: ./todo_service/Dockerfile
                   push: true
-                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/todo-service:latest
             - run: echo "🍏 Job is ${{ job.status }}."
