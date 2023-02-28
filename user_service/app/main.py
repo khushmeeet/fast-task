@@ -9,7 +9,7 @@ load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 
 app = FastAPI()
-app.include_router(user_routes, prefix="/api/v1/")
+app.include_router(user_routes, prefix="/api/v1")
 
 
 @app.on_event("startup")
