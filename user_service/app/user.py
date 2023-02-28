@@ -1,7 +1,6 @@
 import os
 import datetime
 import time
-from dotenv import load_dotenv
 from fastapi import APIRouter, status, Depends
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -10,9 +9,8 @@ from jose import JWTError, jwt
 from db import User
 from models import UserModel, JWTModel
 
-load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", "default")
+SECRET_KEY = os.environ.get("SECRET_KEY", "default")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

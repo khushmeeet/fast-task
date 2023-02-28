@@ -31,6 +31,9 @@ jobs:
                   platforms: linux/arm64
                   file: ./user_service/Dockerfile
                   push: true
+                  build-args: |
+                      "MONGO_URI=${{ secrets.MONGO_URI }}"
+                      "SECRET_KEY=${{ secrets.SECRET_KEY }}"
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
             - run: echo "🍏 Job is ${{ job.status }}."
 
