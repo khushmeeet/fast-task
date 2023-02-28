@@ -28,6 +28,7 @@ jobs:
               uses: docker/build-push-action@v4
               with:
                   context: user_service
+                  platforms: linux/arm64
                   file: ./user_service/Dockerfile
                   push: true
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
@@ -53,6 +54,7 @@ jobs:
               uses: docker/build-push-action@v4
               with:
                   context: todo_service
+                  platforms: linux/arm64
                   file: ./todo_service/Dockerfile
                   push: true
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/todo-service:latest
