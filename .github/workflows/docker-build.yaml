@@ -27,7 +27,7 @@ jobs:
             - name: Build and push
               uses: docker/build-push-action@v4
               with:
-                  context: .
+                  context: user_service
                   file: ./user_service/Dockerfile
                   push: true
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
@@ -52,7 +52,7 @@ jobs:
             - name: Build and push
               uses: docker/build-push-action@v4
               with:
-                  context: .
+                  context: todo_service
                   file: ./todo_service/Dockerfile
                   push: true
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
