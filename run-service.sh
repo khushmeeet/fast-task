@@ -5,24 +5,29 @@ if ! [ -x "$(command -v jq)" ]; then
     exit 1
 fi
 
-helm_status=$(helm status user-service --output json | jq -r '.status')
-if [[ $helm_status == *"not found"* ]]; then
+user_status=$(helm status user-service --output json | jq -r '.info.status')
+if [[ $user_status == *"uninstalled"* ]]; then
     echo ">> user-service is not installed"
     echo ">> installing user-service"
-    helm install user-service ./user-service/helm
-elif [[ $helm_status == *"installed"* ]]; then
+    helm install user-service ./user_service/helm
+elif [[ $user_status == *"deployed"* ]]; then
     echo ">> user-service is already installed"
     echo ">> updating user-service"
-    helm upgrade user-service ./user-service/helm
+    helm uninstall user-service
+    helm install user-service ./user_service/helm
 fi
 
-helm_status=$(helm status todo-service --output json | jq -r '.status')
-if [[ $helm_status == *"not found"* ]]; then
+echo ""
+echo ""
+
+todo_status=$(helm status todo-service --output json | jq -r '.info.status')
+if [[ $todo_status == *"uninstalled"* ]]; then
     echo ">> todo-service is not installed"
     echo ">> installing todo-service"
-    helm install todo-service ./todo-service/helm
-elif [[ $helm_status == *"installed"* ]]; then
+    helm install todo-service ./todo_service/helm
+elif [[ $todo_status == *"deployed"* ]]; then
     echo ">> todo-service is already installed"
     echo ">> updating todo-service"
-    helm upgrade todo-service ./todo-service/helm
+    helm uninstall todo-service
+    helm install todo-service ./todo_service/helm
 fi
