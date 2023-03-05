@@ -9,7 +9,7 @@ from db import StatusEnum
 
 
 class TodosModel(BaseModel):
-    id: Optional[str] = Field(..., alias="_id")
+    id: Optional[str] = Field(None, alias="_id")
     title: str
     desc: Optional[str]
     tags: Optional[List[str]]

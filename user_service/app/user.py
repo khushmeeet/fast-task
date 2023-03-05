@@ -6,11 +6,13 @@ from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+from dotenv import load_dotenv
 from db import User
 from models import UserModel, JWTModel
 
+load_dotenv()
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "default")
+SECRET_KEY = os.getenv("SECRET_KEY", "default")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
