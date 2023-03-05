@@ -60,5 +60,7 @@ jobs:
                   platforms: linux/arm64
                   file: ./todo_service/Dockerfile
                   push: true
+                  build-args: |
+                      "MONGO_URI=${{ secrets.MONGO_URI }}"
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/todo-service:latest
             - run: echo "🍏 Job is ${{ job.status }}."

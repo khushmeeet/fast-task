@@ -5,12 +5,12 @@
 replicaCount: 1
 
 image:
-  repository: "khushmeet/user-service"
+  repository: "khushmeet/todo-service"
   pullPolicy: Always
   tag: "latest"
 
 service:
-  name: user-service
+  name: todo-service
   type: NodePort
   port: 8000
 
