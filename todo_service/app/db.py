@@ -17,6 +17,7 @@ class StatusEnum(Enum):
 
 
 class Todos(Document):
+    uid = EmailField(required=True)
     title = StringField(required=True)
     desc = StringField()
     tags = ListField(StringField(max_length=20))
