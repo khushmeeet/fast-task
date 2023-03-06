@@ -3,3 +3,4 @@ mongoengine==0.26.0
 python-dotenv
 python-multipart
 uvicorn==0.17.6
+httpx==0.23.3

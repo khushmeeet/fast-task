@@ -54,7 +54,6 @@ async def get_current_user(token: str = Depends(oauth2)):
             f"http://token-service:8000/api/v1/verify/token", json={"token": token}
         )
         resp = json.loads(resp.content)
-        print(resp)
         if resp["condition"] == False:
             if "expired" in resp["detail"]:
                 raise HTTPException(
