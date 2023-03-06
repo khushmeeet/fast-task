@@ -1,6 +1,8 @@
 import os
 import datetime
 import time
+import json
+import httpx
 from fastapi import APIRouter, status, Depends
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -17,7 +19,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 user_routes = APIRouter()
-oauth2 = OAuth2PasswordBearer(tokenUrl="/login", scheme_name="JWT")
+oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/login", scheme_name="JWT")
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -47,29 +49,34 @@ def create_jwt(data: dict, expires_delta: int | None = None):
 
 
 async def get_current_user(token: str = Depends(oauth2)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(payload)
-        if datetime.datetime.fromtimestamp(payload["exp"]) < datetime.datetime.now():
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="JWT expired",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    except JWTError as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            f"http://0.0.0.0:8000/api/v1/verify/token", json={"token": token}
         )
-    user = User.objects(email=payload.get("email"))
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user[0].to_mongo().to_dict()
+        resp = json.loads(resp.content)
+        print(resp)
+        if resp["condition"] == False:
+            if "expired" in resp["detail"]:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="JWT expired",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            if "invalid" in resp["detail"]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Invalid authentication credentials",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+        else:
+            user = User.objects(email=resp.get("email"))
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="User not found",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            return user[0].to_mongo().to_dict()
 
 
 @user_routes.get("/user/me", response_model=UserModel)
@@ -82,7 +89,9 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
     user = User.objects(email=form.username)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     user_model = UserModel(
         first_name=user[0].first_name,
@@ -94,6 +103,7 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     jwt = create_jwt(
         data={"email": user_model.email}, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES * 60
@@ -103,9 +113,10 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
 
 @user_routes.post("/signup")
 async def signup(form: UserModel):
-    user = User.objects(email=form.email)
+    user = User.objects(email=form.email).values_list()
     print(user)
     if user != []:
+        print("...")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User already exists",

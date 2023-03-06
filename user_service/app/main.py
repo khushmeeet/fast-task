@@ -1,4 +1,5 @@
 import os
+import httpx
 from fastapi import FastAPI
 from mongoengine import connect, disconnect
 from dotenv import load_dotenv

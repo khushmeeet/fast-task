@@ -1,0 +1,4 @@
+fastapi==0.92.0
+python-dotenv
+python-jose==3.3.0
+uvicorn==0.17.6
