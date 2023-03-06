@@ -1,4 +1,5 @@
 fastapi==0.92.0
+pydantic[email]
 mongoengine==0.26.0
 python-dotenv
 python-multipart
