@@ -31,3 +31,18 @@ elif [[ $todo_status == *"deployed"* ]]; then
     helm uninstall todo-service
     helm install todo-service ./todo_service/helm
 fi
+
+echo ""
+echo ""
+
+token_status=$(helm status token-service --output json | jq -r '.info.status')
+if [[ $token_status == *"uninstalled"* ]]; then
+    echo ">> token-service is not installed"
+    echo ">> installing token-service"
+    helm install token_service ./token_service/helm
+elif [[ $token_status == *"deployed"* ]]; then
+    echo ">> token-service is already installed"
+    echo ">> updating token-service"
+    helm uninstall token-service
+    helm install token-service ./token_service/helm
+fi
