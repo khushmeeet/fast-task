@@ -51,7 +51,7 @@ def create_jwt(data: dict, expires_delta: int | None = None):
 async def get_current_user(token: str = Depends(oauth2)):
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            f"http://token-service:8000/api/v1/verify/token", json={"token": token}
+            f"http://token-service:8080/api/v1/verify/token", json={"token": token}
         )
         resp = json.loads(resp.content)
         if resp["condition"] == False:
@@ -113,9 +113,7 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
 @user_routes.post("/signup")
 async def signup(form: UserModel):
     user = User.objects(email=form.email).values_list()
-    print(user)
-    if user != []:
-        print("...")
+    if len(user) > 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User already exists",

@@ -24,11 +24,11 @@ def convert_objectid_to_str(obj):
 async def create_todo(todo: TodosModel, token: str = Header()):
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            f"http://token-service:8000/api/v1/verify/token", json={"token": token}
+            "http://token-service:8000/api/v1/verify/token", json={"token": token}
         )
         resp = json.loads(resp.content)
         if resp["condition"] == True:
-            todo = Todos(**todo.dict())
+            todo = Todos(owner=resp["email"], **todo.dict())
             todo.save()
             return {"detail": "todo saved successfully"}
         else:
@@ -50,11 +50,11 @@ async def create_todo(todo: TodosModel, token: str = Header()):
 async def get_todos(token: str = Header()):
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            f"http://token-service:8000/api/v1/verify/token", json={"token": token}
+            "http://token-service:8000/api/v1/verify/token", json={"token": token}
         )
         resp = json.loads(resp.content)
         if resp["condition"] == True:
-            todos = Todos.objects()
+            todos = Todos.objects(owner=resp["email"])
             todos = list(map(lambda s: s.to_mongo().to_dict(), todos))
             for i in todos:
                 convert_objectid_to_str(i)
@@ -79,11 +79,11 @@ async def get_todos(token: str = Header()):
 async def get_todo(id: str, token: str = Header()):
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            f"http://token-service:8000/api/v1/verify/token", json={"token": token}
+            "http://token-service:8000/api/v1/verify/token", json={"token": token}
         )
         resp = json.loads(resp.content)
         if resp["condition"] == True:
-            todo = Todos.objects(id=id)
+            todo = Todos.objects(id=id, owner=resp["email"])
             todo = todo[0].to_mongo().to_dict()
             convert_objectid_to_str(todo)
             return todo
@@ -106,11 +106,11 @@ async def get_todo(id: str, token: str = Header()):
 async def edit_todo(id: str, todo: TodosModel, token: str = Header()):
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            f"http://token-service:8000/api/v1/verify/token", json={"token": token}
+            "http://token-service:8000/api/v1/verify/token", json={"token": token}
         )
         resp = json.loads(resp.content)
         if resp["condition"] == True:
-            t = Todos.objects(id=id).update_one(
+            t = Todos.objects(id=id, owner=resp["email"]).update_one(
                 set__title=todo.title,
                 set__desc=todo.desc,
                 set__tags=todo.tags,
@@ -139,11 +139,11 @@ async def edit_todo(id: str, todo: TodosModel, token: str = Header()):
 async def edit_status(id: str, todo_status: StatusEnum, token: str = Header()):
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            f"http://token-service:8000/api/v1/verify/token", json={"token": token}
+            "http://token-service:8000/api/v1/verify/token", json={"token": token}
         )
         resp = json.loads(resp.content)
         if resp["condition"] == True:
-            todo = Todos.objects(id=id).update_one(
+            todo = Todos.objects(id=id, owner=resp["email"]).update_one(
                 set__status=todo_status,
             )
             return {"detail": f"status updated to {status}"}
@@ -166,11 +166,11 @@ async def edit_status(id: str, todo_status: StatusEnum, token: str = Header()):
 async def delete_todo(id: str, token: str = Header()):
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            f"http://token-service:8000/api/v1/verify/token", json={"token": token}
+            "http://token-service:8000/api/v1/verify/token", json={"token": token}
         )
         resp = json.loads(resp.content)
         if resp["condition"] == True:
-            todo = Todos.objects(id=id).delete()
+            todo = Todos.objects(id=id, owner=resp["email"]).delete()
             return {"detail": f"todo deleted {id}"}
         else:
             if "expired" in resp["detail"]:
